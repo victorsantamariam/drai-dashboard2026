@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard DRAI 2026-1</title>
+    <script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" integrity="sha384-jZvDSsmGB9oGGT/4l9bHXGoAv1OxvG/cFmSo0dZaSqmBgvQTKDBFAMftlXTmMbNW" crossorigin="anonymous">
+    <style>
+        :root {
+            color-scheme: light;
+            --primary: #1e40af;
+            --secondary: #7c3aed;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --light: #f3f4f6;
+            --dark: #1f2937;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: var(--dark);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .tabs-nav {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid var(--light);
+            overflow-x: auto;
+            background: #fafafa;
+            padding: 0;
+        }
+
+        .tabs-nav button {
+            flex: 1;
+            min-width: 160px;
+            padding: 16px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tabs-nav button:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        .tabs-nav button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .area-info {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .area-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .area-description {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .gridjs-wrapper {
+            border: none;
+        }
+
+        .gridjs-table {
+            font-size: 13px;
+        }
+
+        .gridjs-thead {
+            background: var(--light);
+        }
+
+        .gridjs-tr:hover {
+            background: #fafafa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-logistica {
+            background: #dbeafe;
+            color: var(--primary);
+        }
+
+        .badge-sistemas {
+            background: #f3e8ff;
+            color: var(--secondary);
+        }
+
+        .badge-soporte {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        .badge-comunicaciones {
+            background: #fef3c7;
+            color: var(--warning);
+        }
+
+        .badge-documental {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .badge-proyectos {
+            background: #ccfbf1;
+            color: #0d9488;
+        }
+
+        .badge-ingenia {
+            background: #cffafe;
+            color: #0891b2;
+        }
+
+        .badge-produccion {
+            background: #fce7f3;
+            color: #ec4899;
+        }
+
+        .badge-administrativa {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-completado {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        .status-curso {
+            background: #fef3c7;
+            color: var(--warning);
+        }
+
+        .status-pendiente {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .footer {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 12px;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .tabs-nav button {
+                min-width: 120px;
+                padding: 12px 16px;
+                font-size: 12px;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Dashboard DRAI</h1>
+            <p class="subtitle">Departamento de Recursos de Apoyo e Informática - Facultad de Ingeniería</p>
+            <p class="subtitle">Informes de actividades 2026-1 (Abril - Mayo) | Por Áreas y Actividades</p>
+        </header>
+
+        <!-- TABS -->
+        <div class="tabs-container">
+            <div class="tabs-nav" id="tabsNav"></div>
+
+            <!-- Área 1: Apoyo Logístico -->
+            <div class="tab-content" id="tab-1">
+                <div class="area-info">
+                    <div class="area-title">🏢 Apoyo Logístico y Videoconferencia</div>
+                    <div class="area-description">Gestión de espacios, aulas, eventos y videoconferencias para actividades académicas y administrativas</div>
+                </div>
+                <div id="table-1"></div>
+            </div>
+
+            <!-- Área 2: Gestión de Sistemas -->
+            <div class="tab-content" id="tab-2">
+                <div class="area-info">
+                    <div class="area-title">💻 Gestión de Sistemas de Información</div>
+                    <div class="area-description">Administración de sistemas informáticos y infraestructura tecnológica</div>
+                </div>
+                <div id="table-2"></div>
+            </div>
+
+            <!-- Área 3: Soporte Telemático -->
+            <div class="tab-content" id="tab-3">
+                <div class="area-info">
+                    <div class="area-title">📱 Soporte Telemático</div>
+                    <div class="area-description">Soporte técnico en plataformas virtuales y comunicaciones digitales</div>
+                </div>
+                <div id="table-3"></div>
+            </div>
+
+            <!-- Área 4: Soporte Técnico -->
+            <div class="tab-content" id="tab-4">
+                <div class="area-info">
+                    <div class="area-title">🎓 Soporte Técnico y Académico Ingeni@ - Comunicaciones</div>
+                    <div class="area-description">Apoyo académico, comunicaciones y coordinación de iniciativas educativas</div>
+                </div>
+                <div id="table-4"></div>
+            </div>
+
+            <!-- Área 5: Gestión Documental -->
+            <div class="tab-content" id="tab-5">
+                <div class="area-info">
+                    <div class="area-title">📄 Gestión Documental CENDOI</div>
+                    <div class="area-description">Centro de Documentación e Información - Gestión de archivos y documentación</div>
+                </div>
+                <div id="table-5"></div>
+            </div>
+
+            <!-- Área 6: Gestión de Proyectos -->
+            <div class="tab-content" id="tab-6">
+                <div class="area-info">
+                    <div class="area-title">📋 Unidad de Gestión de Proyectos</div>
+                    <div class="area-description">Seguimiento y coordinación de proyectos institucionales (PMM, UGP)</div>
+                </div>
+                <div id="table-6"></div>
+            </div>
+
+            <!-- Área 7: Ingeni@ -->
+            <div class="tab-content" id="tab-7">
+                <div class="area-info">
+                    <div class="area-title">🚀 Ingeni@</div>
+                    <div class="area-description">Gestión integral de programas educativos especializados y formación académica</div>
+                </div>
+                <div id="table-7"></div>
+            </div>
+
+            <!-- Área 8: Producción -->
+            <div class="tab-content" id="tab-8">
+                <div class="area-info">
+                    <div class="area-title">🎬 Producción</div>
+                    <div class="area-description">Producción audiovisual, diseño gráfico y contenido multimedia</div>
+                </div>
+                <div id="table-8"></div>
+            </div>
+
+            <!-- Área 9: Gestión Administrativa -->
+            <div class="tab-content" id="tab-9">
+                <div class="area-info">
+                    <div class="area-title">📑 Gestión Administrativa</div>
+                    <div class="area-description">Trámites administrativos, contratación, compras y gestión de recursos</div>
+                </div>
+                <div id="table-9"></div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Dashboard en vivo - Datos extraídos de informes DRAI 2026-1</p>
+        </footer>
+    </div>
+
+    <script>
+        // Definición de todas las áreas
+        const areas = [
+            {
+                id: 1,
+                name: "Apoyo Logístico y Videoconferencia",
+                icon: "🏢",
+                activities: [
+                    { activity: "Aulas programadas (13-17 Abril)", count: 805, detail: "Apertura y cierre", status: "Completado" },
+                    { activity: "Aulas por reservas (13-17 Abril)", count: 113, detail: "Reservas puntuales", status: "Completado" },
+                    { activity: "Videoconferencias atendidas (13-17 Abril)", count: 30, detail: "Solicitudes procesadas", status: "Completado" },
+                    { activity: "Transmisiones streaming (13-17 Abril)", count: 2, detail: "Con grabación", status: "Completado" },
+                    { activity: "Aulas programadas (20-24 Abril)", count: 834, detail: "Apertura y cierre", status: "Completado" },
+                    { activity: "Videoconferencias atendidas (20-24 Abril)", count: 31, detail: "Solicitudes procesadas", status: "Completado" },
+                    { activity: "Transmisiones streaming (20-24 Abril)", count: 2, detail: "Con grabación", status: "Completado" },
+                    { activity: "Aulas programadas (27-30 Abril)", count: 712, detail: "Apertura y cierre", status: "Completado" },
+                    { activity: "Videoconferencias atendidas (27-30 Abril)", count: 45, detail: "Solicitudes procesadas", status: "Completado" },
+                ]
+            },
+            {
+                id: 2,
+                name: "Gestión de Sistemas de Información",
+                icon: "💻",
+                activities: [
+                    { activity: "Gestión de servidores", count: 5, detail: "Mantenimientos realizados", status: "Completado" },
+                    { activity: "Actualización de sistemas", count: 8, detail: "Parches de seguridad", status: "En Curso" },
+                    { activity: "Backups realizados", count: 12, detail: "Diarios", status: "Completado" },
+                ]
+            },
+            {
+                id: 3,
+                name: "Soporte Telemático",
+                icon: "📱",
+                activities: [
+                    { activity: "Soportes técnicos atendidos", count: 15, detail: "Plataformas virtuales", status: "Completado" },
+                    { activity: "Incidentes resueltos", count: 8, detail: "Conectividad", status: "Completado" },
+                ]
+            },
+            {
+                id: 4,
+                name: "Soporte Técnico y Académico Ingeni@",
+                icon: "🎓",
+                activities: [
+                    { activity: "Respuestas email (13-17 Abril)", count: 85, detail: "Soporte facultad", status: "Completado" },
+                    { activity: "Respuestas email (20-24 Abril)", count: 10, detail: "Soporte facultad", status: "Completado" },
+                    { activity: "Respuestas email (27-30 Abril)", count: 39, detail: "Soporte facultad", status: "Completado" },
+                    { activity: "Llamadas atendidas (27-30 Abril)", count: 6, detail: "Líneas 2198499 y 2195581", status: "Completado" },
+                    { activity: "Clonación de exámenes", count: 30, detail: "Inglés y otros cursos", status: "Completado" },
+                    { activity: "Configuración de cuestionarios", count: 15, detail: "Exámenes de validación", status: "Completado" },
+                    { activity: "Ingeni@ - Administrativo (27-30 Abril)", count: 56, detail: "Reportes archivados", status: "Completado" },
+                    { activity: "Talento Tech - Capacitaciones", count: 200, detail: "Inscripciones y ajustes", status: "En Curso" },
+                ]
+            },
+            {
+                id: 5,
+                name: "Gestión Documental CENDOI",
+                icon: "📄",
+                activities: [
+                    { activity: "Documentos procesados", count: 42, detail: "Archivados y catalogados", status: "Completado" },
+                    { activity: "Solicitudes de información", count: 8, detail: "Atendidas", status: "Completado" },
+                ]
+            },
+            {
+                id: 6,
+                name: "Unidad de Gestión de Proyectos",
+                icon: "📋",
+                activities: [
+                    { activity: "Reuniones UGP (27-30 Abril)", count: 1, detail: "Equipo interno", status: "Completado" },
+                    { activity: "Consolidación PMM Maestría", count: 1, detail: "Formato de seguimiento", status: "En Curso" },
+                    { activity: "Respuesta de emails", count: 3, detail: "Gestión diaria", status: "Completado" },
+                ]
+            },
+            {
+                id: 7,
+                name: "Ingeni@",
+                icon: "🚀",
+                activities: [
+                    { activity: "Talento Tech - Matrículas (13-17 Abril)", count: 249, detail: "Campistas inscritos", status: "En Curso" },
+                    { activity: "Talento Tech - Pruebas de nivel (13-17 Abril)", count: 80, detail: "Aplicadas", status: "Completado" },
+                    { activity: "Talento Tech - Matrículas (20-24 Abril)", count: 198, detail: "Campistas gestionados", status: "En Curso" },
+                    { activity: "Talento Tech - Matrículas en SIGA (20-24 Abril)", count: 32, detail: "Procesadas", status: "Completado" },
+                    { activity: "Talento Tech - Docentes matriculados (20-24 Abril)", count: 44, detail: "Aulas Talento Tech", status: "Completado" },
+                    { activity: "Talento Tech - Asistencias ajustadas (27-30 Abril)", count: 234, detail: "Campistas", status: "En Curso" },
+                    { activity: "Talento Tech - Email support (27-30 Abril)", count: 250, detail: "Mensajes atendidos", status: "Completado" },
+                    { activity: "Ingeni@-Administrativo (27-30 Abril)", count: 56, detail: "Reportes de actividades", status: "Completado" },
+                    { activity: "Preuniversitario AVA", count: 12, detail: "Asesorías vocacionales", status: "En Curso" },
+                    { activity: "PTIES - Bienestar", count: 8, detail: "Nivelación de estudiantes", status: "En Curso" },
+                ]
+            },
+            {
+                id: 8,
+                name: "Producción",
+                icon: "🎬",
+                activities: [
+                    { activity: "Diseños gráficos (13-17 Abril)", count: 15, detail: "Piezas completadas", status: "Completado" },
+                    { activity: "Videos editados (13-17 Abril)", count: 5, detail: "Contenido multimedia", status: "Completado" },
+                    { activity: "Diseños para Talento Tech (20-24 Abril)", count: 3, detail: "Feria de empleabilidad", status: "Completado" },
+                    { activity: "Producciones multimedia (27-30 Abril)", count: 12, detail: "Facultad y eventos", status: "Completado" },
+                    { activity: "Videos promocionales", count: 8, detail: "Web y redes sociales", status: "En Curso" },
+                    { activity: "Diseño sitio web Facultad", count: 2, detail: "Propuestas", status: "En Curso" },
+                ]
+            },
+            {
+                id: 9,
+                name: "Gestión Administrativa",
+                icon: "📑",
+                activities: [
+                    { activity: "Creación de terceros (13-17 Abril)", count: 2, detail: "Para contratación", status: "Completado" },
+                    { activity: "Asignación de plazas SEA", count: 3, detail: "Procesadas", status: "Completado" },
+                    { activity: "Renovación licencias (20-24 Abril)", count: 3, detail: "ANSYS, ARCGIS, Genially", status: "En Curso" },
+                    { activity: "Solicitudes de transferencia (20-24 Abril)", count: 2, detail: "Procesadas", status: "Completado" },
+                    { activity: "Contrataciones (27-30 Abril)", count: 12, detail: "Gestión Ingeni@", status: "En Curso" },
+                    { activity: "Trámites administrativos (27-30 Abril)", count: 24, detail: "Varios departamentos", status: "Completado" },
+                ]
+            }
+        ];
+
+        // Crear botones de tabs
+        const tabsNav = document.getElementById('tabsNav');
+        areas.forEach(area => {
+            const btn = document.createElement('button');
+            btn.textContent = `${area.icon} ${area.name.split(' ')[0]}`;
+            btn.className = area.id === 1 ? 'active' : '';
+            btn.onclick = () => switchTab(area.id);
+            tabsNav.appendChild(btn);
+        });
+
+        // Función para cambiar tabs
+        function switchTab(tabId) {
+            // Ocultar todos
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tabs-nav button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Mostrar seleccionado
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            event.target.classList.add('active');
+
+            // Renderizar tabla
+            renderTable(tabId);
+        }
+
+        // Función para renderizar tabla
+        function renderTable(areaId) {
+            const area = areas.find(a => a.id === areaId);
+            const containerId = `table-${areaId}`;
+
+            const data = area.activities.map(act => [
+                act.activity,
+                act.count,
+                act.detail,
+                `<span class="status-badge status-${act.status.toLowerCase().replace(' ', '-')}">${act.status}</span>`
+            ]);
+
+            new gridjs.Grid({
+                columns: [
+                    { name: 'Actividad', width: '50%' },
+                    { name: 'Cantidad', width: '15%', formatter: (cell) => `<strong>${cell}</strong>` },
+                    { name: 'Detalle', width: '20%' },
+                    { name: 'Estado', width: '15%' }
+                ],
+                data: data,
+                search: true,
+                sort: true,
+                pagination: {
+                    limit: 10,
+                    enabled: true
+                },
+                width: '100%'
+            }).render(document.getElementById(containerId));
+        }
+
+        // Renderizar tabla inicial
+        renderTable(1);
+    </script>
+</body>
+</html>

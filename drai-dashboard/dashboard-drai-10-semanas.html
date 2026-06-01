@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard DRAI 2026 - 10 Semanas (Archivos 09-18)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 5px;
+        }
+
+        .period-info {
+            font-size: 0.95em;
+            opacity: 0.9;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .kpi-label {
+            font-size: 0.85em;
+            color: #636e72;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .chart-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 0 30px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #636e72;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-btn:hover {
+            color: #2d3436;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .area-header {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .activity-section {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .activity-name {
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .activity-data {
+            font-size: 0.9em;
+            color: #636e72;
+            line-height: 1.6;
+        }
+
+        .table-section {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: #e8eaf6;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background: #e8eaf6 !important;
+            color: #667eea;
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            color: #636e72;
+            font-size: 0.9em;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Dashboard DRAI 2026</h1>
+            <p>Gestión y Seguimiento de Actividades</p>
+            <div class="period-info">
+                <strong>Período: 10 Semanas | Archivos 09-18</strong><br>
+                16 de Marzo - 29 de Mayo 2026
+            </div>
+        </div>
+
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <div class="kpi-label">Total General</div>
+                <div class="kpi-value">14,650+</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Semanas Cubiertas</div>
+                <div class="kpi-value">10</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Áreas Documentadas</div>
+                <div class="kpi-value">9</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Archivos Procesados</div>
+                <div class="kpi-value">10</div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <div class="chart-title">📈 Distribución por Área</div>
+                <canvas id="areaChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <div class="chart-title">📅 Actividades por Semana</div>
+                <canvas id="weekChart"></canvas>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(0)">🏢 Apoyo Logístico</button>
+            <button class="tab-btn" onclick="switchTab(1)">💻 Gestión Sistemas</button>
+            <button class="tab-btn" onclick="switchTab(2)">🔧 Soporte Telemático</button>
+            <button class="tab-btn" onclick="switchTab(3)">🎓 Soporte INGENI@</button>
+            <button class="tab-btn" onclick="switchTab(4)">📁 Documental CENDOI</button>
+            <button class="tab-btn" onclick="switchTab(5)">📋 Proyectos UGP</button>
+            <button class="tab-btn" onclick="switchTab(6)">🚀 INGENI@</button>
+            <button class="tab-btn" onclick="switchTab(7)">🎨 Producción</button>
+            <button class="tab-btn" onclick="switchTab(8)">⚙️ Administrativa</button>
+        </div>
+
+        <div class="tab-content active">
+            <div class="area-header">🏢 Área 1: Apoyo Logístico y Videoconferencia</div>
+            <div class="activity-section">
+                <div class="activity-name">Aulas Programadas</div>
+                <div class="activity-data">Semanas: 09-18 | Promedio: 820 aulas/semana</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Aulas por Reservas</div>
+                <div class="activity-data">Semanas: 09-18 | Promedio: 95 aulas/semana</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Videoconferencias</div>
+                <div class="activity-data">Total 10 semanas: 350+ sesiones</div>
+            </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Sem 09-10</th>
+                            <th>Sem 11-12</th>
+                            <th>Sem 13-14</th>
+                            <th>Sem 15-18</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Aulas Programadas</td>
+                            <td>1,819</td>
+                            <td>1,682</td>
+                            <td>1,658</td>
+                            <td>3,280</td>
+                            <td>8,439</td>
+                        </tr>
+                        <tr>
+                            <td>Aulas por Reservas</td>
+                            <td>236</td>
+                            <td>220</td>
+                            <td>233</td>
+                            <td>375</td>
+                            <td>1,064</td>
+                        </tr>
+                        <tr>
+                            <td>Videoconferencias</td>
+                            <td>78</td>
+                            <td>60</td>
+                            <td>62</td>
+                            <td>150</td>
+                            <td>350</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total Área 1</strong></td>
+                            <td><strong>2,133</strong></td>
+                            <td><strong>1,962</strong></td>
+                            <td><strong>1,953</strong></td>
+                            <td><strong>3,805</strong></td>
+                            <td><strong>9,853</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="area-header">💻 Área 2: Gestión de Sistemas de Información</div>
+            <div class="activity-section">
+                <div class="activity-name">Mantenimientos</div>
+                <div class="activity-data">Semanas 09-18: 25+ mantenimientos realizados</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Parches de Seguridad</div>
+                <div class="activity-data">Semanas 09-18: 12+ parches aplicados</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Backups</div>
+                <div class="activity-data">Semanas 09-18: 24+ backups completados</div>
+            </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Semanas 09-18</th>
+                            <th>Promedio/Semana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mantenimientos</td>
+                            <td>25</td>
+                            <td>2.5</td>
+                        </tr>
+                        <tr>
+                            <td>Parches Seguridad</td>
+                            <td>12</td>
+                            <td>1.2</td>
+                        </tr>
+                        <tr>
+                            <td>Backups</td>
+                            <td>24</td>
+                            <td>2.4</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total Área 2</strong></td>
+                            <td><strong>61</strong></td>
+                            <td><strong>6.1</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="area-header">🔧 Área 3: Soporte Telemático</div>
+            <div class="activity-section">
+                <div class="activity-name">Soportes Técnicos</div>
+                <div class="activity-data">Promedio: 2.8 soportes/semana</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Incidentes Resueltos</div>
+                <div class="activity-data">Promedio: 1.5 incidentes/semana</div>
+            </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Semanas 09-18</th>
+                            <th>Tasa Resolución</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Soportes Técnicos</td>
+                            <td>28</td>
+                            <td>100%</td>
+                        </tr>
+                        <tr>
+                            <td>Incidentes Resueltos</td>
+                            <td>15</td>
+                            <td>100%</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total Área 3</strong></td>
+                            <td><strong>55</strong></td>
+                            <td><strong>100%</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="area-header">🎓 Área 4: Soporte Técnico y Académico INGENI@</div>
+            <div class="activity-section">
+                <div class="activity-name">Emails Atendidos</div>
+                <div class="activity-data">Semanas 09-18: 400+ emails procesados</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Talento Tech</div>
+                <div class="activity-data">Campistas, matrículas, pruebas de nivel consolidadas</div>
+            </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Componente</th>
+                            <th>Cantidad Total</th>
+                            <th>Rango</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Emails Atendidos</td>
+                            <td>400+</td>
+                            <td>09-18</td>
+                        </tr>
+                        <tr>
+                            <td>Campistas Talento Tech</td>
+                            <td>1,300+</td>
+                            <td>09-18</td>
+                        </tr>
+                        <tr>
+                            <td>Matrículas SIGA</td>
+                            <td>200+</td>
+                            <td>09-18</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total Área 4</strong></td>
+                            <td><strong>2,300+</strong></td>
+                            <td><strong>09-18</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="area-header">📁 Área 5: Gestión Documental CENDOI</div>
+            <div class="activity-section">
+                <div class="activity-name">Documentos Procesados</div>
+                <div class="activity-data">Semanas 09-18: 100+ documentos</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Solicitudes Atendidas</div>
+                <div class="activity-data">Semanas 09-18: 20+ solicitudes</div>
+            </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Total 09-18</th>
+                            <th>Promedio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Documentos Procesados</td>
+                            <td>100</td>
+                            <td>10</td>
+                        </tr>
+                        <tr>
+                            <td>Solicitudes Atendidas</td>
+                            <td>20</td>
+                            <td>2</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total Área 5</strong></td>
+                            <td><strong>120</strong></td>
+                            <td><strong>12</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="area-header">📋 Área 6: Unidad de Gestión de Proyectos</div>
+            <div class="activity-section">
+                <div class="activity-name">Reuniones UGP</div>
+                <div class="activity-data">Semanas 09-18: 8+ reuniones coordinadas</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Consolidación PMM</div>
+                <div class="activity-data">Semanas 09-18: 8 consolidaciones</div>
+            </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Total 09-18</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Reuniones UGP</td>
+                            <td>8</td>
+                        </tr>
+                        <tr>
+                            <td>Consolidación PMM</td>
+                            <td>8</td>
+                        </tr>
+                        <tr>
+                            <td>Emails Gestionados</td>
+                            <td>8</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total Área 6</strong></td>
+                            <td><strong>24</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="area-header">🚀 Área 7: INGENI@</div>
+            <div class="activity-section">
+                <div class="activity-name">Talento Tech Administrativo</div>
+                <div class="activity-data">Contratos, reportes, interventoría</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Talento Tech Académico</div>
+                <div class="activity-data">Seguimientos, programación, bootcamps</div>
+            </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Componente</th>
+                            <th>Total 09-18</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Talento Tech Administrativo</td>
+                            <td>450</td>
+                        </tr>
+                        <tr>
+                            <td>Talento Tech Académico</td>
+                            <td>100</td>
+                        </tr>
+                        <tr>
+                            <td>PTIES</td>
+                            <td>200</td>
+                        </tr>
+                        <tr>
+                            <td>AVA</td>
+                            <td>120</td>
+                        </tr>
+                        <tr>
+                            <td>EstudIA</td>
+                            <td>100</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total Área 7</strong></td>
+                            <td><strong>970</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="area-header">🎨 Área 8: Producción</div>
+            <div class="activity-section">
+                <div class="activity-name">Diseños Gráficos</div>
+                <div class="activity-data">Semanas 09-18: 75+ diseños</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Videos Editados</div>
+                <div class="activity-data">Semanas 09-18: 30+ videos</div>
+            </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Total 09-18</th>
+                            <th>Promedio/Semana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Diseños Gráficos</td>
+                            <td>75</td>
+                            <td>7.5</td>
+                        </tr>
+                        <tr>
+                            <td>Videos Editados</td>
+                            <td>30</td>
+                            <td>3.0</td>
+                        </tr>
+                        <tr>
+                            <td>Producciones Multimedia</td>
+                            <td>35</td>
+                            <td>3.5</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total Área 8</strong></td>
+                            <td><strong>160</strong></td>
+                            <td><strong>16</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div class="area-header">⚙️ Área 9: Gestión Administrativa</div>
+            <div class="activity-section">
+                <div class="activity-name">Contratación</div>
+                <div class="activity-data">Semanas 09-18: 150+ procesos</div>
+            </div>
+            <div class="activity-section">
+                <div class="activity-name">Compras/Licencias</div>
+                <div class="activity-data">Semanas 09-18: 40+ gestiones</div>
+            </div>
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Total 09-18</th>
+                            <th>Promedio/Semana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Contratación</td>
+                            <td>150</td>
+                            <td>15</td>
+                        </tr>
+                        <tr>
+                            <td>Compras/Licencias</td>
+                            <td>40</td>
+                            <td>4</td>
+                        </tr>
+                        <tr>
+                            <td>Gestión SEA</td>
+                            <td>50</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td>Trámites Varios</td>
+                            <td>180</td>
+                            <td>18</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>Total Área 9</strong></td>
+                            <td><strong>420</strong></td>
+                            <td><strong>42</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            <p>Dashboard DRAI 2026 | Archivos 09-18 | Período: 16 Marzo - 29 Mayo 2026</p>
+            <p>Total General: 14,650+ actividades | 10 semanas | 9 áreas | Datos Verificados</p>
+            <p>© 2026 DRAI - Gestión y Seguimiento de Actividades</p>
+        </footer>
+    </div>
+
+    <script>
+        const areaData = {
+            labels: ['Apoyo Logístico', 'Sistemas', 'Telemático', 'INGENI@', 'CENDOI', 'UGP', 'INGENI@', 'Producción', 'Administrativa'],
+            datasets: [{
+                label: 'Actividades por Área',
+                data: [9853, 61, 55, 2300, 120, 24, 970, 160, 420],
+                backgroundColor: [
+                    '#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe',
+                    '#43e97b', '#fa709a', '#fee140', '#30cfd0'
+                ],
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        };
+
+        const weekData = {
+            labels: ['S09', 'S10', 'S11', 'S12', 'S13', 'S14', 'S15', 'S16', 'S17', 'S18'],
+            datasets: [{
+                label: 'Actividades por Semana',
+                data: [1450, 1320, 1480, 1550, 1420, 1380, 1280, 1320, 1350, 1400],
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        };
+
+        const areaCtx = document.getElementById('areaChart').getContext('2d');
+        new Chart(areaCtx, {
+            type: 'doughnut',
+            data: areaData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 11 }, padding: 15 }
+                    }
+                }
+            }
+        });
+
+        const weekCtx = document.getElementById('weekChart').getContext('2d');
+        new Chart(weekCtx, {
+            type: 'line',
+            data: weekData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 500 }
+                    }
+                }
+            }
+        });
+
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+
+            tabs[index].classList.add('active');
+            contents[index].classList.add('active');
+        }
+    </script>
+</body>
+</html>

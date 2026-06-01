@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard DRAI 2026-1</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
+    <style>
+        :root {
+            --color-1: #1e40af;
+            --color-2: #7c3aed;
+            --color-3: #059669;
+            --color-4: #d97706;
+            --color-5: #dc2626;
+            --color-6: #0891b2;
+            --color-7: #8b5cf6;
+            --color-8: #ec4899;
+            --color-9: #4f46e5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e5e7eb 100%);
+            color: #1f2937;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(30, 64, 175, 0.3);
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 5px solid;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .kpi-card.card-1 { border-left-color: var(--color-1); }
+        .kpi-card.card-2 { border-left-color: var(--color-2); }
+        .kpi-card.card-3 { border-left-color: var(--color-3); }
+        .kpi-card.card-4 { border-left-color: var(--color-4); }
+        .kpi-card.card-5 { border-left-color: var(--color-5); }
+        .kpi-card.card-6 { border-left-color: var(--color-6); }
+        .kpi-card.card-7 { border-left-color: var(--color-7); }
+        .kpi-card.card-8 { border-left-color: var(--color-8); }
+        .kpi-card.card-9 { border-left-color: var(--color-9); }
+
+        .kpi-icon {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .kpi-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .kpi-detail {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .kpi-card.card-1 .kpi-value { color: var(--color-1); }
+        .kpi-card.card-2 .kpi-value { color: var(--color-2); }
+        .kpi-card.card-3 .kpi-value { color: var(--color-3); }
+        .kpi-card.card-4 .kpi-value { color: var(--color-4); }
+        .kpi-card.card-5 .kpi-value { color: var(--color-5); }
+        .kpi-card.card-6 .kpi-value { color: var(--color-6); }
+        .kpi-card.card-7 .kpi-value { color: var(--color-7); }
+        .kpi-card.card-8 .kpi-value { color: var(--color-8); }
+        .kpi-card.card-9 .kpi-value { color: var(--color-9); }
+
+        /* Gráficos */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f3f4f6;
+            color: #1f2937;
+        }
+
+        .chart-canvas-wrapper {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        /* Tabs */
+        .tab-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+
+        .tab-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+            padding: 0;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 16px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: white;
+            color: var(--color-1);
+        }
+
+        .tab-btn.active {
+            color: white;
+            border-bottom-color: transparent;
+        }
+
+        .tab-btn.active.btn-1 { background: var(--color-1); }
+        .tab-btn.active.btn-2 { background: var(--color-2); }
+        .tab-btn.active.btn-3 { background: var(--color-3); }
+        .tab-btn.active.btn-4 { background: var(--color-4); }
+        .tab-btn.active.btn-5 { background: var(--color-5); }
+        .tab-btn.active.btn-6 { background: var(--color-6); }
+        .tab-btn.active.btn-7 { background: var(--color-7); }
+        .tab-btn.active.btn-8 { background: var(--color-8); }
+        .tab-btn.active.btn-9 { background: var(--color-9); }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .area-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .area-icon {
+            font-size: 32px;
+        }
+
+        .area-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .observations {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border-left: 4px solid;
+        }
+
+        .observations.obs-1 { border-left-color: var(--color-1); }
+        .observations.obs-2 { border-left-color: var(--color-2); }
+        .observations.obs-3 { border-left-color: var(--color-3); }
+        .observations.obs-4 { border-left-color: var(--color-4); }
+        .observations.obs-5 { border-left-color: var(--color-5); }
+        .observations.obs-6 { border-left-color: var(--color-6); }
+        .observations.obs-7 { border-left-color: var(--color-7); }
+        .observations.obs-8 { border-left-color: var(--color-8); }
+        .observations.obs-9 { border-left-color: var(--color-9); }
+
+        .obs-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .obs-text {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .stats-table th {
+            background: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stats-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 13px;
+        }
+
+        .stats-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .footer {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 12px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-btn {
+                min-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Dashboard DRAI 2026-1</h1>
+            <p class="subtitle">Departamento de Recursos de Apoyo e Informática - Facultad de Ingeniería</p>
+            <p class="subtitle">Análisis completo de actividades por área | Abril - Mayo 2026</p>
+        </header>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card card-1">
+                <div class="kpi-icon">🏢</div>
+                <div class="kpi-title">Apoyo Logístico</div>
+                <div class="kpi-value">2,810</div>
+                <div class="kpi-detail">Aulas gestionadas</div>
+            </div>
+            <div class="kpi-card card-2">
+                <div class="kpi-icon">💻</div>
+                <div class="kpi-title">Gestión Sistemas</div>
+                <div class="kpi-value">25</div>
+                <div class="kpi-detail">Mantenimientos</div>
+            </div>
+            <div class="kpi-card card-3">
+                <div class="kpi-icon">📱</div>
+                <div class="kpi-title">Soporte Telemático</div>
+                <div class="kpi-value">31</div>
+                <div class="kpi-detail">Incidentes resueltos</div>
+            </div>
+            <div class="kpi-card card-4">
+                <div class="kpi-icon">🎓</div>
+                <div class="kpi-title">Soporte Académico</div>
+                <div class="kpi-value">534</div>
+                <div class="kpi-detail">Emails atendidos</div>
+            </div>
+            <div class="kpi-card card-5">
+                <div class="kpi-icon">📄</div>
+                <div class="kpi-title">Documental CENDOI</div>
+                <div class="kpi-value">50</div>
+                <div class="kpi-detail">Documentos procesados</div>
+            </div>
+            <div class="kpi-card card-6">
+                <div class="kpi-icon">📋</div>
+                <div class="kpi-title">Gestión Proyectos</div>
+                <div class="kpi-value">8</div>
+                <div class="kpi-detail">Proyectos activos</div>
+            </div>
+            <div class="kpi-card card-7">
+                <div class="kpi-icon">🚀</div>
+                <div class="kpi-title">Ingeni@</div>
+                <div class="kpi-value">1,247</div>
+                <div class="kpi-detail">Campistas gestionados</div>
+            </div>
+            <div class="kpi-card card-8">
+                <div class="kpi-icon">🎬</div>
+                <div class="kpi-title">Producción</div>
+                <div class="kpi-value">47</div>
+                <div class="kpi-detail">Producciones realizadas</div>
+            </div>
+            <div class="kpi-card card-9">
+                <div class="kpi-icon">📑</div>
+                <div class="kpi-title">Administrativa</div>
+                <div class="kpi-value">96</div>
+                <div class="kpi-detail">Trámites procesados</div>
+            </div>
+        </div>
+
+        <!-- Gráficos Principales -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">📊 Actividades por Área</div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="areasChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">📈 Tendencia Semanal (Videoconferencias)</div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs por Área -->
+        <div class="tab-container">
+            <div class="tab-buttons" id="tabButtons"></div>
+
+            <div class="tab-content active" id="tab-0">
+                <div class="area-header">
+                    <div class="area-icon">🏢</div>
+                    <div>
+                        <div class="area-title">Apoyo Logístico y Videoconferencia</div>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Gestión de espacios, eventos y videoconferencias</p>
+                    </div>
+                </div>
+
+                <div class="observations obs-1">
+                    <div class="obs-title">Aulas Gestionadas (13-17 Abril)</div>
+                    <div class="obs-text">Se realizó apertura y cierre de 805 aulas programadas para clase y 113 aulas por reservas puntuales. Eventos auditorio: Asamblea profesoral ASOPRUDEA, charlas de habilidades gerenciales. Aula 21-326: Estudios políticos, Programa 938 Gasure, Especialización en Analítica y Ciencia de Datos.</div>
+                </div>
+
+                <div class="observations obs-1">
+                    <div class="obs-title">Videoconferencias (13-17 Abril)</div>
+                    <div class="obs-text">30 solicitudes procesadas, 2 transmisiones streaming, 4 grabaciones realizadas, 4 eventos en sala de videoconferencia. Soporte a sustentaciones de especializaciones, maestría y doctorados. Gestión diaria de backups y firmware.</div>
+                </div>
+
+                <div class="observations obs-1">
+                    <div class="obs-title">Resumen Semanal (27-30 Abril)</div>
+                    <div class="obs-text">Aulas programadas: 712 | Aulas por reservas: 65 | Videoconferencias: 45 solicitudes | Transmisiones: 1 streaming | Grabaciones: 3 | Eventos Extensión: 2. Infraestructura: Reparación luminarias, entrega de sillas a personal.</div>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Semana</th>
+                            <th>Aulas Programadas</th>
+                            <th>Aulas Reservas</th>
+                            <th>Videoconferencias</th>
+                            <th>Streaming</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>13-17 Abril</strong></td>
+                            <td class="stat-value">805</td>
+                            <td class="stat-value">113</td>
+                            <td class="stat-value">30</td>
+                            <td class="stat-value">2</td>
+                        </tr>
+                        <tr>
+                            <td><strong>20-24 Abril</strong></td>
+                            <td class="stat-value">834</td>
+                            <td class="stat-value">113</td>
+                            <td class="stat-value">31</td>
+                            <td class="stat-value">2</td>
+                        </tr>
+                        <tr>
+                            <td><strong>27-30 Abril</strong></td>
+                            <td class="stat-value">712</td>
+                            <td class="stat-value">65</td>
+                            <td class="stat-value">45</td>
+                            <td class="stat-value">1</td>
+                        </tr>
+                        <tr>
+                            <td><strong>6-10 Abril</strong></td>
+                            <td class="stat-value">1,014</td>
+                            <td class="stat-value">123</td>
+                            <td class="stat-value">31</td>
+                            <td class="stat-value">1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="tab-1">
+                <div class="area-header">
+                    <div class="area-icon">💻</div>
+                    <div>
+                        <div class="area-title">Gestión de Sistemas de Información</div>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Administración de infraestructura tecnológica</p>
+                    </div>
+                </div>
+
+                <div class="observations obs-2">
+                    <div class="obs-title">Actividades Realizadas</div>
+                    <div class="obs-text">Gestión de servidores y sistemas informáticos. Implementación de parches de seguridad. Realización de backups diarios. Actualización de firmware en equipos de videoconferencia. Participación en reuniones de asistencia técnico-logística.</div>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Mantenimientos de servidores</strong></td>
+                            <td class="stat-value">5</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Actualizaciones de seguridad</strong></td>
+                            <td class="stat-value">8</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Backups realizados</strong></td>
+                            <td class="stat-value">12</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="tab-2">
+                <div class="area-header">
+                    <div class="area-icon">📱</div>
+                    <div>
+                        <div class="area-title">Soporte Telemático</div>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Soporte en plataformas virtuales</p>
+                    </div>
+                </div>
+
+                <div class="observations obs-3">
+                    <div class="obs-title">Soportes Atendidos</div>
+                    <div class="obs-text">Atención técnica en plataformas virtuales (Moodle, SIGA, Zoom). Resolución de incidentes de conectividad. Soporte a estudiantes en validación de accesos. Configuración de aulas virtuales.</div>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Soportes técnicos</strong></td>
+                            <td class="stat-value">15</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Incidentes resueltos</strong></td>
+                            <td class="stat-value">8</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Aulas virtuales configuradas</strong></td>
+                            <td class="stat-value">8</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="tab-3">
+                <div class="area-header">
+                    <div class="area-icon">🎓</div>
+                    <div>
+                        <div class="area-title">Soporte Técnico y Académico Ingeni@</div>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Coordinación académica y comunicaciones</p>
+                    </div>
+                </div>
+
+                <div class="observations obs-4">
+                    <div class="obs-title">Emails y Comunicaciones (27-30 Abril)</div>
+                    <div class="obs-text">39 respuestas a correos de soporte. 6 llamadas atendidas en líneas 2198499 y 2195581. Coordinación de eventos ZOOM: Conferencia Ingeniería Aeroespacial, Taller Construye tu Propia IA, Jueves del Egresado.</div>
+                </div>
+
+                <div class="observations obs-4">
+                    <div class="obs-title">Talento Tech - Operaciones</div>
+                    <div class="obs-text">250+ respuestas por email (ayuda@talentotech2.com.co). Inscripciones y ajustes de asistencia. Matrículas en SIGA y Moodle. Coordinación con Rama Judicial, UdeM, CENSA, Uniminuto, Girardota. Pruebas de nivel y validaciones.</div>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Semana</th>
+                            <th>Emails</th>
+                            <th>Llamadas</th>
+                            <th>Talento Tech</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>13-17 Abril</strong></td>
+                            <td class="stat-value">85</td>
+                            <td class="stat-value">11</td>
+                            <td class="stat-value">249</td>
+                        </tr>
+                        <tr>
+                            <td><strong>20-24 Abril</strong></td>
+                            <td class="stat-value">10</td>
+                            <td class="stat-value">3</td>
+                            <td class="stat-value">198</td>
+                        </tr>
+                        <tr>
+                            <td><strong>27-30 Abril</strong></td>
+                            <td class="stat-value">39</td>
+                            <td class="stat-value">6</td>
+                            <td class="stat-value">234</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="tab-4">
+                <div class="area-header">
+                    <div class="area-icon">📄</div>
+                    <div>
+                        <div class="area-title">Gestión Documental CENDOI</div>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Centro de Documentación e Información</p>
+                    </div>
+                </div>
+
+                <div class="observations obs-5">
+                    <div class="obs-title">Documentación</div>
+                    <div class="obs-text">42 documentos procesados y archivados. 8 solicitudes de información atendidas. Catalogación de documentación institucional. Gestión de base de datos documental.</div>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Actividad</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Documentos procesados</strong></td>
+                            <td class="stat-value">42</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Solicitudes atendidas</strong></td>
+                            <td class="stat-value">8</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="tab-5">
+                <div class="area-header">
+                    <div class="area-icon">📋</div>
+                    <div>
+                        <div class="area-title">Unidad de Gestión de Proyectos</div>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Seguimiento de proyectos institucionales</p>
+                    </div>
+                </div>
+
+                <div class="observations obs-6">
+                    <div class="obs-title">Proyectos en Seguimiento</div>
+                    <div class="obs-text">Consolidación de información PMM Maestría en Ingeniería. Diseño de formatos de seguimiento para reportes. Coordinación con División de Programas. Reuniones internas del equipo UGP. Respuesta a correos y solicitudes.</div>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Proyecto</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>PMM Maestría en Ingeniería</strong></td>
+                            <td class="stat-value">En consolidación</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reuniones UGP</strong></td>
+                            <td class="stat-value">Activas</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="tab-6">
+                <div class="area-header">
+                    <div class="area-icon">🚀</div>
+                    <div>
+                        <div class="area-title">Ingeni@</div>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Programas educativos especializados</p>
+                    </div>
+                </div>
+
+                <div class="observations obs-7">
+                    <div class="obs-title">Talento Tech - Gestión de Campistas (27-30 Abril)</div>
+                    <div class="obs-text">35 ajustes de asistencia | 5 matrículas en SIGA | 27 verificaciones de inscripción | 3 pruebas de nivel | 20 cancelaciones de matrícula | 25 reinicio de contraseñas. Acompañamiento bootcamps: Rama Judicial, Sabaneta, Librería Débora Arango.</div>
+                </div>
+
+                <div class="observations obs-7">
+                    <div class="obs-title">Programas Integrados</div>
+                    <div class="obs-text">PTIES: Nivelación estudiantes y asesorías vocacionales. Preuniversitario AVA: Agendamientos y espacios de asesorías. EstudIA: Seguimiento de permanencia y estrategias de retención. Sapiencia: Gestión de ciclos formativos.</div>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Programa</th>
+                            <th>Actividad</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Talento Tech</strong></td>
+                            <td>Campistas gestionados (3 sem)</td>
+                            <td class="stat-value">681</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Talento Tech</strong></td>
+                            <td>Email support</td>
+                            <td class="stat-value">250+</td>
+                        </tr>
+                        <tr>
+                            <td><strong>PTIES</strong></td>
+                            <td>Estudiantes nivelados</td>
+                            <td class="stat-value">45</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="tab-7">
+                <div class="area-header">
+                    <div class="area-icon">🎬</div>
+                    <div>
+                        <div class="area-title">Producción</div>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Producción audiovisual y diseño gráfico</p>
+                    </div>
+                </div>
+
+                <div class="observations obs-8">
+                    <div class="obs-title">Producciones Realizadas (13-17 Abril)</div>
+                    <div class="obs-text">Diseños gráficos: 15 piezas. Videos editados: 5. Contenido: Acreditación Ingeniería de Telecomunicaciones, doctorado en Electrónica, plantillas para Ingeniería Industrial. Diseño sitio web Facultad de Ingeniería (primera propuesta).</div>
+                </div>
+
+                <div class="observations obs-8">
+                    <div class="obs-title">Producciones Abril-Mayo</div>
+                    <div class="obs-text">Diseño sitio web Facultad: 2 propuestas. Portafolio de servicios en Genially. Diseños para Talento Tech: 3 piezas + plantilla Canva. Productos digitales: videos, reles, E-cards. Actualización página web Ingeni@.</div>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Tipo de Producción</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Diseños gráficos</strong></td>
+                            <td class="stat-value">32</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Videos editados</strong></td>
+                            <td class="stat-value">8</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Propuestas web</strong></td>
+                            <td class="stat-value">2</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-content" id="tab-8">
+                <div class="area-header">
+                    <div class="area-icon">📑</div>
+                    <div>
+                        <div class="area-title">Gestión Administrativa</div>
+                        <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Trámites y gestión de recursos</p>
+                    </div>
+                </div>
+
+                <div class="observations obs-9">
+                    <div class="obs-title">Contratación (27-30 Abril)</div>
+                    <div class="obs-text">12 gestiones de contratos Ingeni@. Creación de terceros. Solicitud de exoneraciones. Soporte a PQRS. Acompañamiento visitas interventoría MINTIC. Documentación para pago de honorarios.</div>
+                </div>
+
+                <div class="observations obs-9">
+                    <div class="obs-title">Compras y Transferencias</div>
+                    <div class="obs-text">Renovación licencias: ANSYS, ARCGIS, Genially. Solicitudes de transferencias intrauniversitarias. Elaboración de formatos para licitaciones. Facturación y gestión de cobros por espacios.</div>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Tipo de Trámite</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Creación de terceros</strong></td>
+                            <td class="stat-value">12</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Asignaciones SEA</strong></td>
+                            <td class="stat-value">8</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Renovaciones de licencia</strong></td>
+                            <td class="stat-value">3</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Paz y salvo</strong></td>
+                            <td class="stat-value">4</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Dashboard en vivo - Datos completos del DRAI 2026-1 | Actualizado: Mayo 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        const areas = [
+            { name: 'Apoyo Logístico', color: 'rgba(30, 64, 175, 0.8)', value: 2810 },
+            { name: 'Gestión Sistemas', color: 'rgba(124, 58, 237, 0.8)', value: 25 },
+            { name: 'Soporte Telemático', color: 'rgba(5, 150, 105, 0.8)', value: 31 },
+            { name: 'Soporte Académico', color: 'rgba(217, 119, 6, 0.8)', value: 534 },
+            { name: 'Documental', color: 'rgba(220, 38, 38, 0.8)', value: 50 },
+            { name: 'Gestión Proyectos', color: 'rgba(8, 145, 178, 0.8)', value: 8 },
+            { name: 'Ingeni@', color: 'rgba(139, 92, 246, 0.8)', value: 1247 },
+            { name: 'Producción', color: 'rgba(236, 72, 153, 0.8)', value: 47 },
+            { name: 'Administrativa', color: 'rgba(79, 70, 229, 0.8)', value: 96 }
+        ];
+
+        // Gráfico de Áreas
+        const ctxAreas = document.getElementById('areasChart').getContext('2d');
+        new Chart(ctxAreas, {
+            type: 'bar',
+            data: {
+                labels: areas.map(a => a.name),
+                datasets: [{
+                    label: 'Actividades',
+                    data: areas.map(a => a.value),
+                    backgroundColor: areas.map(a => a.color),
+                    borderWidth: 0,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { grid: { color: 'rgba(0,0,0,0.05)' } } }
+            }
+        });
+
+        // Gráfico de Tendencia
+        const ctxTrend = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: ['6-10 Abril', '13-17 Abril', '20-24 Abril', '27-30 Abril'],
+                datasets: [{
+                    label: 'Videoconferencias',
+                    data: [31, 30, 31, 45],
+                    borderColor: '#1e40af',
+                    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#1e40af'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } }
+            }
+        });
+
+        // Tabs
+        const tabButtons = document.getElementById('tabButtons');
+        const tabNames = ['Apoyo Logístico', 'Gestión Sistemas', 'Soporte Telemático', 'Soporte Académico',
+                          'Documental', 'Gestión Proyectos', 'Ingeni@', 'Producción', 'Administrativa'];
+        const colors = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+        tabNames.forEach((name, i) => {
+            const btn = document.createElement('button');
+            btn.className = `tab-btn btn-${colors[i]} ${i === 0 ? 'active' : ''}`;
+            btn.textContent = name;
+            btn.onclick = () => switchTab(i);
+            tabButtons.appendChild(btn);
+        });
+
+        function switchTab(index) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${index}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
