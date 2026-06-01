@@ -302,7 +302,7 @@
             const [dragover, setDragover] = useState(false);
             const fileInputRef = useRef(null);
 
-            const API_BASE = process.env.REACT_APP_API || 'http://localhost:5000';
+              const API_BASE = 'https://drai-dashboard-backend.onrender.com';
 
             const handleDrop = (e) => {
                 e.preventDefault();
