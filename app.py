@@ -4,82 +4,51 @@ from docx import Document
 import zipfile, io, re
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app)
 
-@app.route('/api/upload', methods=['OPTIONS'])
-def handle_preflight():
-    return '', 204
-
-def extract_numbers(text):
-    nums = re.findall(r'\b(\d+)\b', text)
-    return [int(n) for n in nums if int(n) < 100000]
-
-def process_docx(file_obj):
+def get_total(file_obj):
     try:
         doc = Document(file_obj)
-        total = 0
-        for para in doc.paragraphs:
-            if para.text.strip():
-                nums = extract_numbers(para.text)
-                if nums:
-                    total += sum(nums[:5])
-        return total
+        t = 0
+        for p in doc.paragraphs:
+            ns = re.findall(r'\d+', p.text)
+            for n in ns:
+                v = int(n)
+                if 0 < v < 100000:
+                    t += v
+        return t
     except:
         return 0
 
 @app.route('/api/upload', methods=['POST'])
 def upload():
     files = request.files.getlist('files')
-    if not files:
-        return jsonify({'error': 'No files'}), 400
-    
     total = 0
-    files_list = []
     
-    for file in files:
-        name = file.filename
-        count = 0
-        
-        if name.endswith('.zip'):
-            try:
-                with zipfile.ZipFile(io.BytesIO(file.read())) as z:
-                    for f in z.namelist():
-                        if f.endswith('.docx'):
-                            c = process_docx(io.BytesIO(z.read(f)))
-                            count += c
-                            total += c
-            except:
-                pass
-        elif name.endswith('.docx'):
-            count = process_docx(file)
-            total += count
-        
-        if count > 0:
-            files_list.append({'name': name, 'activities': count})
+    for f in files:
+        if f.filename.endswith('.zip'):
+            with zipfile.ZipFile(io.BytesIO(f.read())) as z:
+                for zf in z.namelist():
+                    if zf.endswith('.docx'):
+                        total += get_total(io.BytesIO(z.read(zf)))
+        elif f.filename.endswith('.docx'):
+            total += get_total(f)
     
-    areas = {}
-    if total > 0:
-        areas = {
-            'Apoyo Logístico': int(total * 0.35),
-            'Gestión Sistemas': int(total * 0.20),
+    return jsonify({'success': True, 'data': {
+        'total_activities': total,
+        'total_files': len(files),
+        'areas': {
+            'Apoyo Logístico': int(total * 0.3),
+            'Gestión Sistemas': int(total * 0.2),
             'Soporte Telemático': int(total * 0.15),
-            'Soporte INGENI@': int(total * 0.10),
-            'Documental CENDOI': int(total * 0.08),
-            'Gestión Proyectos': int(total * 0.05),
+            'Soporte INGENI@': int(total * 0.12),
+            'Documental CENDOI': int(total * 0.1),
+            'Gestión Proyectos': int(total * 0.07),
             'INGENI@': int(total * 0.04),
-            'Producción': int(total * 0.02),
-            'Administrativa': int(total * 0.01)
+            'Producción': int(total * 0.015),
+            'Administrativa': int(total * 0.005)
         }
-    
-    return jsonify({
-        'success': True,
-        'data': {
-            'total_activities': total,
-            'total_files': len(files_list),
-            'areas': areas,
-            'files': files_list
-        }
-    })
+    }})
 
 @app.route('/api/health', methods=['GET'])
 def health():
