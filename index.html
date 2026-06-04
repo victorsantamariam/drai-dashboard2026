@@ -88,27 +88,35 @@
         }
         
         function showResults(data) {
-            const total = data.total_activities || 0;
-            const areas = data.areas || {};
-            
-            let html = '<div class="success">✅ Procesado: ' + total.toLocaleString() + ' actividades</div>';
-            
-            html += '<div class="kpi-grid">';
-            html += '<div class="kpi-card"><div class="kpi-value">' + (data.total_files || 0) + '</div><div class="kpi-label">Archivos</div></div>';
-            html += '<div class="kpi-card"><div class="kpi-value">' + total.toLocaleString() + '</div><div class="kpi-label">Total Actividades</div></div>';
-            html += '</div>';
-            
-            html += '<h3 style="margin-top: 30px; color: #333;">Desglose por Área</h3>';
-            html += '<table><thead><tr><th>Área</th><th style="text-align:right;">Actividades</th></tr></thead><tbody>';
-            
-            for (let area in areas) {
-                html += '<tr><td>' + area + '</td><td style="text-align:right;">' + (areas[area] || 0).toLocaleString() + '</td></tr>';
-            }
-            
-            html += '</tbody></table>';
-            
-            document.getElementById('results').innerHTML = html;
+    const total = data.total_activities || 0;
+    const areas = data.areas || {};
+    
+    let html = '<div class="success">✅ Procesado: ' + total.toLocaleString() + ' actividades</div>';
+    
+    html += '<div class="kpi-grid">';
+    html += '<div class="kpi-card"><div class="kpi-value">' + (data.total_files || 0) + '</div><div class="kpi-label">Archivos</div></div>';
+    html += '<div class="kpi-card"><div class="kpi-value">' + total.toLocaleString() + '</div><div class="kpi-label">Total Actividades</div></div>';
+    html += '</div>';
+    
+    html += '<h3 style="margin-top: 30px; color: #333;">Desglose por Área</h3>';
+    html += '<table><thead><tr><th>Área</th><th style="text-align:right;">Actividades</th></tr></thead><tbody>';
+    
+    let hasAreas = false;
+    for (let area in areas) {
+        if (areas[area] > 0) {
+            hasAreas = true;
+            html += '<tr><td>' + area + '</td><td style="text-align:right;">' + areas[area].toLocaleString() + '</td></tr>';
         }
+    }
+    
+    if (!hasAreas) {
+        html += '<tr><td colspan="2" style="text-align:center;color:#999;">Sin desglose por área disponible</td></tr>';
+    }
+    
+    html += '</tbody></table>';
+    
+    document.getElementById('results').innerHTML = html;
+}
     </script>
 </body>
 </html>
