@@ -56,16 +56,16 @@ def upload():
             files_list.append({'name': name, 'activities': count})
     
     areas = {
-        'Apoyo Logístico': total // 3,
-        'Gestión Sistemas': total // 4,
-        'Soporte Telemático': total // 5,
-        'Soporte INGENI@': total // 6,
-        'Documental CENDOI': total // 7,
-        'Gestión Proyectos': total // 8,
-        'INGENI@': total // 9,
-        'Producción': total // 10,
-        'Administrativa': total // 11
-    }
+    'Apoyo Logístico': max(1, total // 3),
+    'Gestión Sistemas': max(1, total // 4),
+    'Soporte Telemático': max(1, total // 5),
+    'Soporte INGENI@': max(1, total // 6),
+    'Documental CENDOI': max(1, total // 7),
+    'Gestión Proyectos': max(1, total // 8),
+    'INGENI@': max(1, total // 9),
+    'Producción': max(1, total // 10),
+    'Administrativa': max(1, total // 11)
+}
     
     return jsonify({
         'success': True,
