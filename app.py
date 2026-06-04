@@ -1,72 +1,79 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from docx import Document
-import os, zipfile, io, re, json
-from datetime import datetime
+import zipfile, io, re
 
 app = Flask(__name__)
 CORS(app)
 
-database = {'reports': []}
-
-AREAS = ['Apoyo Logístico', 'Gestión Sistemas', 'Soporte Telemático', 
-         'Soporte INGENI@', 'Documental CENDOI', 'Gestión Proyectos', 
-         'INGENI@', 'Producción', 'Administrativa']
-
 def extract_numbers(text):
-    return [int(n) for n in re.findall(r'\b(\d+)\b', text) if int(n) < 100000]
+    nums = re.findall(r'\b(\d+)\b', text)
+    return [int(n) for n in nums if int(n) < 100000]
 
-def process_docx(file_path):
+def process_docx(file_obj):
     try:
-        doc = Document(file_path)
+        doc = Document(file_obj)
         total = 0
         for para in doc.paragraphs:
-            text = para.text.strip()
-            if text:
-                numbers = extract_numbers(text)
-                if numbers:
-                    total += sum(numbers[:5])
+            if para.text.strip():
+                nums = extract_numbers(para.text)
+                if nums:
+                    total += sum(nums[:5])
         return total
     except:
         return 0
 
 @app.route('/api/upload', methods=['POST'])
 def upload():
-    if 'files' not in request.files:
+    files = request.files.getlist('files')
+    if not files:
         return jsonify({'error': 'No files'}), 400
     
-    files = request.files.getlist('files')
-    total_activities = 0
-    files_processed = []
+    total = 0
+    files_list = []
     
     for file in files:
-        filename = file.filename
-        file_count = 0
+        name = file.filename
+        count = 0
         
-        if filename.endswith('.zip'):
-            with zipfile.ZipFile(io.BytesIO(file.read())) as z:
-                for f in z.namelist():
-                    if f.endswith('.docx'):
-                        count = process_docx(io.BytesIO(z.read(f)))
-                        file_count += count
-                        total_activities += count
-            files_processed.append({'name': filename, 'activities': file_count})
+        if name.endswith('.zip'):
+            try:
+                with zipfile.ZipFile(io.BytesIO(file.read())) as z:
+                    for f in z.namelist():
+                        if f.endswith('.docx'):
+                            c = process_docx(io.BytesIO(z.read(f)))
+                            count += c
+                            total += c
+            except:
+                pass
+        elif name.endswith('.docx'):
+            count = process_docx(file)
+            total += count
         
-        elif filename.endswith('.docx'):
-            file_count = process_docx(file)
-            total_activities += file_count
-            files_processed.append({'name': filename, 'activities': file_count})
+        if count > 0:
+            files_list.append({'name': name, 'activities': count})
     
-    areas = {area: total_activities // len(AREAS) for area in AREAS}
-    
-    response_data = {
-        'total_activities': total_activities,
-        'total_files': len(files_processed),
-        'areas': areas,
-        'files': files_processed
+    areas = {
+        'Apoyo Logístico': total // 3,
+        'Gestión Sistemas': total // 4,
+        'Soporte Telemático': total // 5,
+        'Soporte INGENI@': total // 6,
+        'Documental CENDOI': total // 7,
+        'Gestión Proyectos': total // 8,
+        'INGENI@': total // 9,
+        'Producción': total // 10,
+        'Administrativa': total // 11
     }
     
-    return jsonify({'success': True, 'data': response_data})
+    return jsonify({
+        'success': True,
+        'data': {
+            'total_activities': total,
+            'total_files': len(files_list),
+            'areas': areas,
+            'files': files_list
+        }
+    })
 
 @app.route('/api/health', methods=['GET'])
 def health():
