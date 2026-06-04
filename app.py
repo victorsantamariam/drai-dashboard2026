@@ -6,6 +6,10 @@ import zipfile, io, re
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+@app.route('/api/upload', methods=['OPTIONS'])
+def handle_preflight():
+    return '', 204
+
 def extract_numbers(text):
     nums = re.findall(r'\b(\d+)\b', text)
     return [int(n) for n in nums if int(n) < 100000]
@@ -22,9 +26,7 @@ def process_docx(file_obj):
         return total
     except:
         return 0
-@app.route('/api/upload', methods=['OPTIONS'])
-def handle_preflight():
-    return '', 204
+
 @app.route('/api/upload', methods=['POST'])
 def upload():
     files = request.files.getlist('files')
@@ -55,17 +57,19 @@ def upload():
         if count > 0:
             files_list.append({'name': name, 'activities': count})
     
-    areas = {
-    'Apoyo Logístico': max(1, total // 3),
-    'Gestión Sistemas': max(1, total // 4),
-    'Soporte Telemático': max(1, total // 5),
-    'Soporte INGENI@': max(1, total // 6),
-    'Documental CENDOI': max(1, total // 7),
-    'Gestión Proyectos': max(1, total // 8),
-    'INGENI@': max(1, total // 9),
-    'Producción': max(1, total // 10),
-    'Administrativa': max(1, total // 11)
-}
+    areas = {}
+    if total > 0:
+        areas = {
+            'Apoyo Logístico': int(total * 0.35),
+            'Gestión Sistemas': int(total * 0.20),
+            'Soporte Telemático': int(total * 0.15),
+            'Soporte INGENI@': int(total * 0.10),
+            'Documental CENDOI': int(total * 0.08),
+            'Gestión Proyectos': int(total * 0.05),
+            'INGENI@': int(total * 0.04),
+            'Producción': int(total * 0.02),
+            'Administrativa': int(total * 0.01)
+        }
     
     return jsonify({
         'success': True,
