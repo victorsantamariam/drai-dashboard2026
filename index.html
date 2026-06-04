@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DRAI Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        body { font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
         h1 { text-align: center; color: #333; margin-bottom: 10px; }
         .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
-        .upload-area { border: 2px dashed #667eea; padding: 40px; border-radius: 10px; text-align: center; background: #f8f9fa; cursor: pointer; margin: 20px 0; }
+        .upload-area { border: 2px dashed #667eea; padding: 40px; text-align: center; background: #f8f9fa; cursor: pointer; margin: 20px 0; border-radius: 10px; }
         .upload-area:hover { background: #e8eaf6; }
         button { background: #667eea; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; }
         button:hover { background: #764ba2; }
@@ -19,14 +18,14 @@
         .kpi-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 5px solid #667eea; text-align: center; }
         .kpi-value { font-size: 2em; font-weight: bold; color: #667eea; }
         .kpi-label { font-size: 0.9em; color: #999; text-transform: uppercase; margin-top: 10px; }
-        .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; margin: 30px 0; }
-        .chart-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; margin-top: 30px; }
         th { background: #667eea; color: white; padding: 15px; text-align: left; }
         td { padding: 12px; border-bottom: 1px solid #eee; }
         tr:hover { background: #f8f9fa; }
         .success { background: #e0ffe0; color: #060; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .error { background: #ffe0e0; color: #c00; padding: 15px; border-radius: 5px; }
         .loading { text-align: center; padding: 20px; }
+        #fileInput { display: none; }
     </style>
 </head>
 <body>
@@ -35,12 +34,12 @@
         <p class="subtitle">Análisis de Actividades por Área</p>
         
         <div class="upload-area" id="uploadArea">
-            <p style="font-size: 18px;">📁 Arrastra DOCX/ZIP aquí o haz click</p>
+            <p>📁 Arrastra DOCX/ZIP aquí o haz click</p>
         </div>
         
         <div style="text-align: center;">
-            <input type="file" id="fileInput" multiple accept=".docx,.zip" style="display:none;">
-            <button onclick="document.getElementById('fileInput').click()">Seleccionar Archivos</button>
+            <input type="file" id="fileInput" multiple accept=".docx,.zip">
+            <button onclick="selectFiles()">Seleccionar Archivos</button>
             <button onclick="uploadFiles()">Procesar</button>
         </div>
         
@@ -49,70 +48,67 @@
 
     <script>
         const API_BASE = 'https://drai-dashboard-backend.onrender.com';
-        let chart1, chart2;
         
-        document.getElementById('uploadArea').addEventListener('click', () => {
+        function selectFiles() {
             document.getElementById('fileInput').click();
-        });
+        }
+        
+        document.getElementById('uploadArea').addEventListener('click', selectFiles);
         
         async function uploadFiles() {
-    const files = document.getElementById('fileInput').files;
-    if (files.length === 0) return alert('Selecciona archivos');
-    
-    document.getElementById('results').innerHTML = '<div class="loading">⏳ Procesando...</div>';
-    
-    const formData = new FormData();
-    for (let file of files) formData.append('files', file);
-    
-    try {
-        const response = await fetch(API_BASE + '/api/upload', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        console.log('Respuesta del servidor:', data);
-        
-        if (response.ok && data.success && data.data) {
-            displayDashboard(data.data);
-        } else {
-            document.getElementById('results').innerHTML = '<div style="color:red;">Error: ' + (data.error || 'Datos inválidos') + '</div>';
+            const files = document.getElementById('fileInput').files;
+            if (files.length === 0) {
+                alert('Selecciona archivos');
+                return;
+            }
+            
+            document.getElementById('results').innerHTML = '<div class="loading">⏳ Procesando...</div>';
+            
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('files', file);
+            }
+            
+            try {
+                const response = await fetch(API_BASE + '/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success && data.data) {
+                    showResults(data.data);
+                } else {
+                    document.getElementById('results').innerHTML = '<div class="error">Error: ' + (data.error || 'Datos inválidos') + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<div class="error">Error: ' + error.message + '</div>';
+            }
         }
-    } catch (error) {
-        document.getElementById('results').innerHTML = '<div style="color:red;">Error: ' + error.message + '</div>';
-    }
-}
         
-        function displayDashboard(data) {
-    console.log('Data recibida:', data);
-    
-    if (!data || !data.total_activities) {
-        document.getElementById('results').innerHTML = '<div style="color:red;">No hay datos para mostrar</div>';
-        return;
-    }
-    
-    const total = data.total_activities || 0;
-    const areas = data.areas || {};
-    
-    let html = '<div class="success">✅ Procesado: ' + total.toLocaleString() + ' actividades</div>';
-    
-    html += '<div class="kpi-grid">';
-    html += '<div class="kpi-card"><div class="kpi-value">' + (data.total_files || 0) + '</div><div class="kpi-label">Archivos</div></div>';
-    html += '<div class="kpi-card"><div class="kpi-value">' + total.toLocaleString() + '</div><div class="kpi-label">Total</div></div>';
-    html += '</div>';
-    
-    html += '<h3 style="margin-top: 30px;">Desglose por Área</h3>';
-    html += '<table><thead><tr><th>Área</th><th style="text-align:right;">Actividades</th></tr></thead><tbody>';
-    
-    for (let area in areas) {
-        html += '<tr><td>' + area + '</td><td style="text-align:right;">' + (areas[area] || 0).toLocaleString() + '</td></tr>';
-    }
-    
-    html += '</tbody></table>';
-    
-    document.getElementById('results').innerHTML = html;
-}
-}
+        function showResults(data) {
+            const total = data.total_activities || 0;
+            const areas = data.areas || {};
+            
+            let html = '<div class="success">✅ Procesado: ' + total.toLocaleString() + ' actividades</div>';
+            
+            html += '<div class="kpi-grid">';
+            html += '<div class="kpi-card"><div class="kpi-value">' + (data.total_files || 0) + '</div><div class="kpi-label">Archivos</div></div>';
+            html += '<div class="kpi-card"><div class="kpi-value">' + total.toLocaleString() + '</div><div class="kpi-label">Total Actividades</div></div>';
+            html += '</div>';
+            
+            html += '<h3 style="margin-top: 30px; color: #333;">Desglose por Área</h3>';
+            html += '<table><thead><tr><th>Área</th><th style="text-align:right;">Actividades</th></tr></thead><tbody>';
+            
+            for (let area in areas) {
+                html += '<tr><td>' + area + '</td><td style="text-align:right;">' + (areas[area] || 0).toLocaleString() + '</td></tr>';
+            }
+            
+            html += '</tbody></table>';
+            
+            document.getElementById('results').innerHTML = html;
+        }
     </script>
 </body>
 </html>
