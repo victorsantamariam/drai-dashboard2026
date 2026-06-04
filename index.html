@@ -56,101 +56,62 @@
         });
         
         async function uploadFiles() {
-            const files = document.getElementById('fileInput').files;
-            if (files.length === 0) return alert('Selecciona archivos');
-            
-            document.getElementById('results').innerHTML = '<div class="loading">⏳ Procesando...</div>';
-            
-            const formData = new FormData();
-            for (let file of files) formData.append('files', file);
-            
-            try {
-                const response = await fetch(API_BASE + '/api/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                if (response.ok) {
-                    displayDashboard(data.data);
-                } else {
-                    document.getElementById('results').innerHTML = '<div style="color:red;">❌ Error: ' + data.error + '</div>';
-                }
-            } catch (error) {
-                document.getElementById('results').innerHTML = '<div style="color:red;">❌ Error: ' + error.message + '</div>';
-            }
-        }
+    const files = document.getElementById('fileInput').files;
+    if (files.length === 0) return alert('Selecciona archivos');
+    
+    document.getElementById('results').innerHTML = '<div class="loading">⏳ Procesando...</div>';
+    
+    const formData = new FormData();
+    for (let file of files) formData.append('files', file);
+    
+    try {
+        const response = await fetch(API_BASE + '/api/upload', {
+            method: 'POST',
+            body: formData
+        });
         
-        function displayDashboard(report) {
-    if (!report || !report.areas) {
-        document.getElementById('results').innerHTML = '<div style="color:red;">Error en datos</div>';
+        const data = await response.json();
+        console.log('Respuesta del servidor:', data);
+        
+        if (response.ok && data.success && data.data) {
+            displayDashboard(data.data);
+        } else {
+            document.getElementById('results').innerHTML = '<div style="color:red;">Error: ' + (data.error || 'Datos inválidos') + '</div>';
+        }
+    } catch (error) {
+        document.getElementById('results').innerHTML = '<div style="color:red;">Error: ' + error.message + '</div>';
+    }
+}
+        
+        function displayDashboard(data) {
+    console.log('Data recibida:', data);
+    
+    if (!data || !data.total_activities) {
+        document.getElementById('results').innerHTML = '<div style="color:red;">No hay datos para mostrar</div>';
         return;
     }
     
-    const areas = report.areas || {};
-    const total = report.total_activities || 0;
+    const total = data.total_activities || 0;
+    const areas = data.areas || {};
     
-    let html = '<div class="success">✅ Procesado exitosamente</div>';
+    let html = '<div class="success">✅ Procesado: ' + total.toLocaleString() + ' actividades</div>';
     
     html += '<div class="kpi-grid">';
-    html += '<div class="kpi-card"><div class="kpi-value">' + (report.total_files || 0) + '</div><div class="kpi-label">Archivos</div></div>';
-    html += '<div class="kpi-card"><div class="kpi-value">' + total.toLocaleString() + '</div><div class="kpi-label">Total Actividades</div></div>';
+    html += '<div class="kpi-card"><div class="kpi-value">' + (data.total_files || 0) + '</div><div class="kpi-label">Archivos</div></div>';
+    html += '<div class="kpi-card"><div class="kpi-value">' + total.toLocaleString() + '</div><div class="kpi-label">Total</div></div>';
     html += '</div>';
     
-    html += '<div class="charts">';
-    html += '<div class="chart-container"><canvas id="doughnutChart"></canvas></div>';
-    html += '<div class="chart-container"><canvas id="barChart"></canvas></div>';
-    html += '</div>';
-    
-    html += '<h3 style="margin-top: 40px; color: #333;">Desglose por Área</h3>';
-    html += '<table><thead><tr><th>Área</th><th style="text-align:right;">Actividades</th><th style="text-align:right;">%</th></tr></thead><tbody>';
-    
-    const areaLabels = [];
-    const areaValues = [];
+    html += '<h3 style="margin-top: 30px;">Desglose por Área</h3>';
+    html += '<table><thead><tr><th>Área</th><th style="text-align:right;">Actividades</th></tr></thead><tbody>';
     
     for (let area in areas) {
-        let count = areas[area] || 0;
-        if (count > 0) {
-            areaLabels.push(area);
-            areaValues.push(count);
-            const percent = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
-            html += '<tr><td>' + area + '</td><td style="text-align:right;">' + count.toLocaleString() + '</td><td style="text-align:right;">' + percent + '%</td></tr>';
-        }
+        html += '<tr><td>' + area + '</td><td style="text-align:right;">' + (areas[area] || 0).toLocaleString() + '</td></tr>';
     }
     
     html += '</tbody></table>';
-    document.getElementById('results').innerHTML = html;
     
-    setTimeout(() => {
-        try {
-            new Chart(document.getElementById('doughnutChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: areaLabels,
-                    datasets: [{
-                        data: areaValues,
-                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b', '#fa709a', '#fee140', '#30cfd0']
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-            });
-            
-            new Chart(document.getElementById('barChart'), {
-                type: 'bar',
-                data: {
-                    labels: areaLabels,
-                    datasets: [{
-                        label: 'Actividades',
-                        data: areaValues,
-                        backgroundColor: '#667eea'
-                    }]
-                },
-                options: { responsive: true, indexAxis: 'y' }
-            });
-        } catch(e) {
-            console.error('Error creando gráficos:', e);
-        }
-    }, 100);
+    document.getElementById('results').innerHTML = html;
+}
 }
     </script>
 </body>
