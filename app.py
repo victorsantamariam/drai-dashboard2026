@@ -4,7 +4,7 @@ from docx import Document
 import zipfile, io, re
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 def extract_numbers(text):
     nums = re.findall(r'\b(\d+)\b', text)
@@ -22,7 +22,9 @@ def process_docx(file_obj):
         return total
     except:
         return 0
-
+@app.route('/api/upload', methods=['OPTIONS'])
+def handle_preflight():
+    return '', 204
 @app.route('/api/upload', methods=['POST'])
 def upload():
     files = request.files.getlist('files')
